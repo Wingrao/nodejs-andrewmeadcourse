@@ -76,3 +76,33 @@ test('Should Delete Account', async () => {
 test('Should Not Delete Account', async () => {
   await request(app).delete('users/me').send().expect(200);
 });
+
+test('Should Have Avatar Pic', async () => {
+  await request(app)
+    .post('users/me/avatar')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .attach('avatar', 'tests/fixtures/profile-pic.png')
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+  expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test('Should Update Valid User Fields', async () => {
+  await request(app)
+    .patch('users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({ name: 'Jess' })
+    .expect(200);
+
+  const user = await User.findById(userOneId);
+  expect(user.name).toEqual('Jess');
+});
+
+est('Should Not Update Valid User Fields', async () => {
+  await request(app)
+    .patch('users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({ location: 'Philly' })
+    .expect(400);
+});
